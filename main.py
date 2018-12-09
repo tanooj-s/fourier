@@ -21,7 +21,7 @@ class UploadForm(FlaskForm):
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'AHs0JleAhvzcolWG'
-app.config['UPLOADED_PHOTOS_DEST'] = 'uploads/'
+app.config['UPLOADED_FILES_DEST'] = 'uploads/'
 
 @app.route('/',methods=['GET','POST'])
 def upload():
@@ -53,7 +53,7 @@ def upload():
 		axis2.semilogx(fourier_transform['x'],fourier_transform['y'])
 
 		fig.tight_layout()
-		plot_path = 'static/img/plot_' + curr_time + '.png'
+		plot_path = 'static/plot_' + curr_time + '.png'
 		fig.savefig(plot_path)
 		#each plot should be its own image, separate objects for spectrograms and frequency-space plots
 
