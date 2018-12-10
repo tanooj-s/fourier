@@ -11,6 +11,7 @@ import librosa.core as lc
 from librosa import amplitude_to_db
 import librosa.display
 import librosa.effects
+import librosa.decompose
 
 import matplotlib.pyplot as plt
 
@@ -35,22 +36,34 @@ def upload():
 		samples, _ = librosa.effects.trim(samples,top_db=20)
 		fourier_transform = get_fft(samples,rate)
 		constant_q = librosa.amplitude_to_db(np.abs(lc.cqt(samples)),ref=np.max)
-	
-		fig = plt.figure(figsize=(15,9))	
-
-		axis1 = fig.add_subplot(2,1,1)
+		# get harmonic and percussive components using built in librosa 
+		h,p = librosa.amplitude_to_db(librosa.decompose.hpss(np.abs(lc.stft(samples))),ref=np.max) 
+		
+		fig = plt.figure(figsize=(15,12))	
+		axis1 = fig.add_subplot(4,1,1)
 		axis1.set_title('Constant Q Transform')
 		axis1.set_xlabel('Time (s)')
 		axis1.set_ylabel('Notes - 12 per octave')
 		axis1.pcolormesh(constant_q)
 		axis1.set_yticklabels(np.arange(0,constant_q.shape[1],12))
 
-		axis2 = fig.add_subplot(2,1,2)
-		axis2.set_ylabel('Relative Amplitude')
-		axis2.set_xlabel('Frequency (Hz)')
-		axis2.set_xlim(20,20000) # human range
-		axis2.set_xticklabels(np.arange(100,20000,100))
-		axis2.semilogx(fourier_transform['x'],fourier_transform['y'])
+
+		# in addition to a plot what this needs is a widget that allows you to pay the decomposed audio files 
+		# (and possibly a download link for them)
+		axis2 = fig.add_subplot(4,1,2)
+		axis2.set_title('Harmonic Components')
+		axis2.pcolormesh(h)
+		# need to scale the y axis to log scale here
+		axis3 = fig.add_subplot(4,1,3)
+		axis3.set_title('Percussive Components')
+		axis3.pcolormesh(p)
+
+		axis4 = fig.add_subplot(4,1,4)
+		axis4.set_ylabel('Relative Amplitude')
+		axis4.set_xlabel('Frequency (Hz)')
+		axis4.set_xlim(20,20000) # human range
+		axis4.set_xticklabels(np.arange(100,20000,100))
+		axis4.semilogx(fourier_transform['x'],fourier_transform['y'])
 
 		fig.tight_layout()
 		plot_path = 'static/plot_' + curr_time + '.png'
@@ -63,7 +76,7 @@ def upload():
 	return render_template('upload.html', form=form)
 
 
-@app.route('/fft',methods=['GET','POST'])
+@app.route('/plots',methods=['GET','POST'])
 def results():
 	return render_template('results.html')
 
