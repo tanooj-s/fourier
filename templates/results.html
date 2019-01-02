@@ -1,8 +1,19 @@
 <html>
 <head>
-<title>Fourier Transform</title>
+<title>Audio Features</title>
 </head>
 <body>
-	<img src = "{{session['path_to_plot']}}"/>
+	<h1> Results </h1>
+
+	<p>
+		Click to download <a href = "{{session['harmonic']}}"> harmonic </a> 
+		and <a href = "{{session['percussive']}}"> percussive </a> components of your uploaded audio file.
+	</p>
+
+	<p>	
+		<img src = "{{session['plots']}}"/> 
+	</p>
+
+
 </body>
 </html>

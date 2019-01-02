@@ -3,11 +3,17 @@
 <title>Upload</title>
 </head>
 <body>
+<p> Please upload an audio file to analyze (should be a wav file), and the upper and lower timestamps. Spectral information
+will be more useful with a shorter input file. </p>
 <form method="post" enctype="multipart/form-data">
-    {{ form.hidden_tag() }}
+	
+	{{ form.hidden_tag() }}
     {{ form.user_file }}
+    {{ form.lower_bound_time }}
+    {{ form.upper_bound_time }}
+
+
     <input type="submit">
 </form>
-<p> {{ curr_out }} </p>
 </body>
 </html>
