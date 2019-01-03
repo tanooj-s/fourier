@@ -12,7 +12,7 @@ from librosa import amplitude_to_db
 import librosa.display
 import librosa.effects
 import librosa.decompose
-from librosa.feature import chroma_cqt
+from librosa.feature import chroma_stft
 from librosa.output import write_wav
 
 import matplotlib.pyplot as plt
@@ -48,30 +48,33 @@ def upload():
 		harmonic = librosa.effects.harmonic(samples, margin = 2.0)
 		percussive = librosa.effects.percussive(samples, margin = 2.0) 
 		fourier_transform = get_fft(harmonic,rate) # only get the fourier transform of the harmonic
+
+		# get peak frequencies from 
+		peaks = get_peak_frequencies(fourier_transform['y'])
 		
 		cmap = plt.get_cmap('Blues')
 		plt.figure(figsize=(12,15))
 
 		# plot waveform amplitude
-		plt.subplot(5,1,1, title='Waveform', xlabel='Time (s)', ylabel='Amplitude')
+		plt.subplot(4,1,1, title='Waveform', xlabel='Time (s)', ylabel='Amplitude')
 		plt.plot(np.arange(0,len(samples))/rate, samples)
 
 		# plot fourier transform
-		plt.subplot(5,1,2, title='Fourier Transform', xlim=(20,20000), xlabel='Hz', ylabel='Relative Amplitude')
+		plt.subplot(4,1,2, title='Fourier Transform', xlim=(20,20000), xlabel='Hz', ylabel='Relative Amplitude')
 		plt.semilogx(fourier_transform['x'], fourier_transform['y'])
 		# try doing this only for harmonic components instead
 
 		# plot spectrogram of harmonic components
-		plt.subplot(5,1,3, title='Spectrogram')
+		plt.subplot(4,1,3, title='Spectrogram')
 		librosa.display.specshow(amplitude_to_db(np.abs(lc.stft(harmonic)),ref=np.max), y_axis='log', x_axis='time', cmap=cmap)
 
 		# plot percussive components 
-		plt.subplot(5,1,4, title='Percussive Components')
-		librosa.display.specshow(amplitude_to_db(np.abs(lc.stft(percussive)),ref=np.max), y_axis='log', x_axis='time', cmap=cmap)
+#		plt.subplot(5,1,4, title='Percussive Components')
+#		librosa.display.specshow(amplitude_to_db(np.abs(lc.stft(percussive)),ref=np.max), y_axis='log', x_axis='time', cmap=cmap)
 
 		# plot chromagram of harmonic components (try different librosa variants)
-		chromagram = chroma_cqt(harmonic, rate, hop_length=512)
-		plt.subplot(5,1,5, title='Chromagram')
+		chromagram = chroma_stft(harmonic, rate, hop_length=512)
+		plt.subplot(4,1,4, title='Chromagram')
 		librosa.display.specshow(chromagram, y_axis='chroma', x_axis='time', cmap=cmap)
 
 		plt.tight_layout()
@@ -84,6 +87,8 @@ def upload():
 		write_wav(path=h_file, y=harmonic, sr=rate)
 		write_wav(path=p_file, y=percussive, sr=rate)
 
+
+		session['peaks'] = peaks
 		session['plots'] = plot_file
 		session['harmonic'] = h_file
 		session['percussive'] = p_file
@@ -103,9 +108,37 @@ def get_fft(samples,rate):
 	yfft = fftpack.fft(x=samples,n=rate)
 	max_amp = np.max(np.abs(yfft))
 	xfft = np.linspace(0,nyquist,nyquist)
-	yfft = np.abs(yfft[:nyquist])/(max_amp) # not sure why we don't need to multiply by 2/len(samples) to scale properly here
+	yfft = np.abs(yfft[:nyquist])/(max_amp) 
 	return {'x': xfft, 'y': yfft}
 
+
+def get_peak_frequencies(lst):
+	# for this use case lst is assumed to be fft['y'] i.e. the relative amplitudes of the fourier tranform
+	indices = sorted(np.argpartition(lst,-10)[-10:]) # get indices of 15 max values in the list (these essentially correspond to fft['x'])
+	peak_freqs = []
+	for i in indices:
+		if lst[i] > 0.3:
+			peak_freqs.append(i)
+	peak_freqs = purge(peak_freqs) # only retain mean of clusters
+	peak_freqs = [str(p) for p in peak_freqs]
+	return peak_freqs
+
+def purge(lst):
+	lst = sorted(lst)
+	stack = []
+	out = []
+	for num in lst:
+		if len(stack) == 0:
+			stack.append(num)
+		elif (num - stack[-1]) < 5: # peak frequency "cluster" threshold
+			stack.append(num)
+		else:
+			out.append(np.mean(stack))
+			stack = []
+			stack.append(num)
+	if len(stack) > 0:
+		out.append(np.mean(stack))
+	return out	
 
 if __name__=='__main__':
 	app.run(debug=True)
