@@ -1,6 +1,7 @@
-This (currently) super stripped down web app allows a user to upload an audio file and returns a plot of the Fourier transform of the first 15 seconds of the sample and a spectrogram of the constant-Q transform (this works better than the Short Time Fourier Transform for musical applications). The file is bounced down to mono and read in at a sample rate of 22050 Hz, although I'll add more options for the user once I have an actual input form on the homepage.
+This (currently) super stripped down web app allows a user to upload an audio file and returns a plot of the Fourier transform of the specified duration of the sample as well as a spectrogram of the percussive and harmonic components of the file and a chromagram to display the "density" of notes at each frame. The file is bounced down to mono and read in at a sample rate of 22050 Hz.
 
-![Example output](https://github.com/tanooj-s/fourier/tree/master/static/plot_1544408217.png)
+Users now also have the option to download audio files of the separated harmonic and percussive components.
+Examples output files can be found in the static folder.
 
-Medium term to long term I hope to add some useful information retrieval features, possibly chord/key recognition or an instrument source separator. 
+Features to add: useful information retrieval features, possibly chord/key recognition or an instrument source separator. 
 
