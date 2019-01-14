@@ -10,13 +10,16 @@
 		and <a href = "{{session['percussive']}}"> percussive </a> components of your uploaded audio file.
 	</p>
 
-	<h3>PEAK FREQUENCIES</h3>
-		<br>
-		{% for i in session['peaks'] %}
-			<td>{{i}} Hz</td>
+	<br>
+
+	<h4>PEAK FREQUENCIES</h4>
+		{% for i in range(session['freqs'] | length)  %}
+			<td> {{session['freqs'][i]}} Hz - <b>{{session['notes'][i]}}</b> </td>
 			<br>
 		{% endfor %}
-	</p>
+
+
+	<p>Chord identified - <b> {{session['chord']}} </b> </p>
 
 	<p>	
 		<img src = "{{session['plots']}}"/> 

@@ -14,11 +14,11 @@ from librosa import amplitude_to_db
 import librosa.display
 import librosa.effects
 import librosa.decompose
-from librosa.feature import chroma_stft
+from librosa.feature import chroma_stft, chroma_cens, chroma_cqt
 from librosa.output import write_wav
 
 from scipy import fftpack
-from util import get_fft, purge, get_peak_frequencies
+from util import get_fft, purge, get_peak_frequencies, get_chord, note_to_ix, chord_map
 
 class UploadForm(FlaskForm):
 	user_file = FileField()
@@ -32,6 +32,7 @@ app.config['UPLOADED_FILES_DEST'] = 'uploads/'
 @app.route('/',methods=['GET','POST'])
 def upload():
 	form = UploadForm()
+	cmap = plt.get_cmap('cividis')
 
 	if form.validate_on_submit():
 		# save user's uploaded file
@@ -52,8 +53,11 @@ def upload():
 
 		# get peak frequencies from 
 		peaks = get_peak_frequencies(fourier_transform['y'])
+		freqs = [p[0] for p in peaks]
+		notes = [p[1] for p in peaks]
+		chord = get_chord(notes)
+
 		
-		cmap = plt.get_cmap('Blues')
 		plt.figure(figsize=(12,15))
 
 		# plot waveform amplitude
@@ -65,18 +69,20 @@ def upload():
 		plt.semilogx(fourier_transform['x'], fourier_transform['y'])
 		# try doing this only for harmonic components instead
 
-		# plot spectrogram of harmonic components
+		# plot constant-q of harmonic components
 		plt.subplot(4,1,3, title='Spectrogram')
-		librosa.display.specshow(amplitude_to_db(np.abs(lc.stft(harmonic)),ref=np.max), y_axis='log', x_axis='time', cmap=cmap)
-
+		librosa.display.specshow(amplitude_to_db(np.abs(lc.cqt(harmonic)),ref=np.max), y_axis='cqt_note', x_axis='time', cmap=cmap)
+		plt.colorbar()
 		# plot percussive components 
 #		plt.subplot(5,1,4, title='Percussive Components')
 #		librosa.display.specshow(amplitude_to_db(np.abs(lc.stft(percussive)),ref=np.max), y_axis='log', x_axis='time', cmap=cmap)
 
 		# plot chromagram of harmonic components (try different librosa variants)
-		chromagram = chroma_stft(harmonic, rate, hop_length=512)
+		chromagram = chroma_cqt(harmonic, rate, hop_length=512)
 		plt.subplot(4,1,4, title='Chromagram')
 		librosa.display.specshow(chromagram, y_axis='chroma', x_axis='time', cmap=cmap)
+		plt.colorbar()
+
 
 		plt.tight_layout()
 		plot_file = 'static/plot_' + curr_time + '.png'
@@ -89,7 +95,9 @@ def upload():
 		write_wav(path=p_file, y=percussive, sr=rate)
 
 
-		session['peaks'] = peaks
+		session['freqs'] = freqs
+		session['notes'] = notes
+		session['chord'] = chord
 		session['plots'] = plot_file
 		session['harmonic'] = h_file
 		session['percussive'] = p_file
