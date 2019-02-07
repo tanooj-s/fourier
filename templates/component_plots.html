@@ -1,0 +1,18 @@
+<html>
+<head>
+<title>Component Separation</title>
+</head>
+<body>
+
+	<h4>Listen to components separated by your specified spectral decomposition technique. </h4>
+		{% for i in range(session['component_files'] | length)  %}
+			<td>  <a href = {{ session['component_files'][i] }}> component {{i}}  </a> </td>
+			<br>
+		{% endfor %}
+
+	<p> 
+		<img src = "{{ session['component_plots'] }}"/> 
+	</p>
+	
+</body>
+</html>

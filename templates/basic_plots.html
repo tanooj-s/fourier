@@ -5,14 +5,6 @@
 <body>
 	<h1> Results </h1>
 
-
-	<p> <i>Add widget to play uploaded file here</i> </p>
-
-	<br>
-
-	<p> {{ session['spect'] }} </p>
-
-
 	<h4>PEAK FREQUENCIES</h4>
 		{% for i in range(session['freqs'] | length)  %}
 			<td> {{session['freqs'][i]}} Hz - <b>{{session['notes'][i]}}</b> </td>
@@ -26,21 +18,13 @@
 		<img src = "{{session['plots']}}"/> 
 	</p>
 
-	<br>
-
 	<p>
-		Click to download <a href = "{{session['harmonic']}}"> harmonic </a> 
-		and <a href = "{{session['percussive']}}"> percussive </a> components of your uploaded audio file.
+		<a href = "{{url_for('harm_perc')}}"> Click to view plots of separated harmonic and percussive components </a>.
 	</p>
 
 	<p>
-		Click to view musical features. 
+		<a href = "{{url_for('components')}}"> Click to view components separated by specified spectogram decomposition technique </a>.
 	</p>
-
-	<p>
-		Click to view separated components.
-	</p>
-
 
 
 </body>

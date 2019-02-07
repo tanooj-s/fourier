@@ -1,6 +1,16 @@
 from scipy import fftpack
 import numpy as np
 import librosa.core as lc
+import librosa.feature as lf
+import librosa.decompose
+import librosa.effects as le
+
+def load_sample(path,upper_bound,lower_bound):
+	samples, rate = lc.load(path=path, mono=True, duration=upper_bound) 
+	samples, _ = le.trim(samples[int(rate*lower_bound):int(rate*upper_bound)], top_db=20)
+	return samples, rate
+
+
 def get_fft(samples,rate):
 	nyquist = int(rate/2)
 	yfft = fftpack.fft(x=samples,n=rate)
@@ -9,28 +19,28 @@ def get_fft(samples,rate):
 	yfft = np.abs(yfft[:nyquist])/(max_amp) 
 	return {'x': xfft, 'y': yfft}
 
-
-def get_peak_frequencies(lst):
-	# for this use case lst is assumed to be fft['y'] i.e. the relative amplitudes of the fourier tranform
-	indices = sorted(np.argpartition(lst,-40)[-40:]) # get indices of 25 max values in the list (these essentially correspond to fft['x'])
+def get_peak_frequencies(lst): 
+	# for this use case lst is assumed to be fft['y'] 
+	indices = sorted(np.argpartition(lst,-50)[-50:]) 
 	peak_freqs = []
 	for i in indices:
 		if lst[i] > 0.3:
 			peak_freqs.append(i)
 	peak_freqs = sorted(purge(peak_freqs)) # only retain mean of clusters
-	peak_freqs = [[str(p),lc.hz_to_note(p)] for p in peak_freqs] # get frequency and note
+	peak_freqs = [[str(p), lc.hz_to_note(p)] for p in peak_freqs] 
 	return peak_freqs
 
 
 def purge(lst):
-	# from a list of numbers, if there are any clusters, get the mean of the clusters
+	# from a list of numbers, if there are any clusters, get the mean of the clusters 
 	lst = sorted(lst)
 	stack = []
 	out = []
+	threshold = 5 # should be adjustable, possibly on a log scale
 	for num in lst:
 		if len(stack) == 0:
 			stack.append(num)
-		elif (num - stack[-1]) < 5: # peak frequency "cluster" threshold
+		elif (num - stack[-1]) < threshold: 
 			stack.append(num)
 		else:
 			out.append(np.mean(stack))
@@ -48,14 +58,14 @@ def get_chord(note_list):
 		chord_hash = ''
 		for n in note_list:
 			chord_hash = chord_hash + str(note_to_ix[n[:-1].lower()])
-
 		for k in chord_map.keys():
 			if k in chord_hash:
 				return chord_map[k]
 		return 'Unidentified chord'
 
 
-
+def extract_features(signal): 
+	return [librosa.feature.zero_crossing_rate(signal)[0], librosa.feature.spectral_centroid(signal)[0]]
 
 note_to_ix = {
 	'c': '1',
@@ -70,7 +80,6 @@ note_to_ix = {
 	'a': '10',
 	'a#': '11',
 	'b': '12'
-
 }
 
 # built out from note_to_ix above, to avoid issues with sharp characters when sorting

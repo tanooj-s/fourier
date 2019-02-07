@@ -3,17 +3,45 @@
 <title>Upload</title>
 </head>
 <body>
-<p> Please upload an audio file to analyze (should be a wav file), and the upper and lower timestamps. Spectral information
-will be more useful with a shorter input file. </p>
-<form method="post" enctype="multipart/form-data">
+	<h3> Welcome to Audio Analysis! </h3> 
+
+	<p> Please upload a <b>wav</b> file and choose how many components you would like to decompose it into, and which matrix decomposition technique you'd like. </p>
+	<!--em>make it so that the user can select different types of matrix decomposition and see the results</em-->
+
+	<p> Also select which kind of spectrogram to display. Remember, spectral information will be more useful over a shorter time span. </p>
 	
-	{{ form.hidden_tag() }}
-    {{ form.user_file }}
-    {{ form.lower_bound_time }}
-    {{ form.upper_bound_time }}
+	<form method="post" enctype="multipart/form-data">
+	
+		{{ form.hidden_tag() }}
 
+    	{{ form.user_file }}
+    
+    	<br>
+    	<br>
 
-    <input type="submit">
-</form>
+    	{{ form.lower_bound_time.label }} {{ form.lower_bound_time }}   {{ form.upper_bound_time.label }} {{ form.upper_bound_time }}
+    
+    	<br>
+    	<br>
+
+    	{{ form.n_components.label }} {{ form.n_components }}
+
+    	<br>
+
+    	<p><b>Decomposition Options:</b></p>
+
+    	{{ form.d_opts }}
+
+    	<br>
+    	<br>
+
+    	<p><b>Spectogram Options:</b></p>
+
+    	{{ form.spec_opts }}
+
+		<input type="submit">
+
+	</form>
+
 </body>
 </html>
