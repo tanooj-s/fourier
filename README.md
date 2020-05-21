@@ -3,5 +3,5 @@ This (currently) super stripped down web app allows a user to upload an audio fi
 Users now also have the option to download audio files of the separated harmonic and percussive components.
 Examples output files can be found in the static folder. Basic chord identification has been added, although not for separate frames yet (i.e. it assumes the entire uploaded audio file is a single chord).
 
-Features to add: useful information retrieval features, possibly chord/key recognition or an instrument source separator. 
+Features to add: useful information retrieval features, possibly chord/key recognition or an instrument source separator ( - pipe dream!) 
 
